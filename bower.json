@@ -1,0 +1,20 @@
+{
+  "name": "laravel_quicktasktest",
+  "description": "",
+  "main": "",
+  "authors": [
+    "Le Xuan Quang <Quang.lxun@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/Quang173330/laravel_quicktask",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "Font-Awesome": "^5.15.1"
+  }
+}

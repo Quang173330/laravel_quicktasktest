@@ -18,5 +18,22 @@ use App\Task;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::resource('tasks', TaskController::class);
-Route::resource('users', UserController::class);
+
+
+Route::group(['middleware' => 'localization'], function () {
+    Route::resource('tasks', TaskController::class);
+    Route::resource('users', UserController::class);
+    Route::get('change-language/{locale}', function ($locale) {
+        $lang = $locale;
+        $language = config('app.locale');
+        if ($lang == 'en') {
+            $language = 'en';
+        }
+        if ($lang == 'vi') {
+            $language = 'vi';
+        }
+        Session::put('language', $language);
+
+        return redirect()->back();
+    })->name('change-language');
+});

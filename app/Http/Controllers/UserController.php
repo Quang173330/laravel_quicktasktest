@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use App\Task;
+use App\User;
 
 class UserController extends Controller
 {
@@ -14,7 +16,11 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        $users = User::orderBy('created_at', 'asc')->get();
+
+        return view('users.index', [
+            'users' => $users
+        ]);
     }
 
     /**
@@ -24,7 +30,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return view('users.create');
     }
 
     /**
@@ -35,7 +41,22 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+            'email' => 'required|email',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('users.index')
+                ->withInput()
+                ->withErrors($validator);
+        }
+        $user = new User;
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->save();
+
+        return redirect()->route('users.index');
     }
 
     /**
@@ -46,7 +67,12 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        //
+        $user = User::find($id);
+        $tasks = $user->tasks()->get();
+        return view('users.view', [
+            'user' => $user,
+            'tasks' => $tasks
+        ]);
     }
 
     /**
@@ -57,7 +83,14 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        //
+        $user = User::find($id);
+        $tasks = $user->tasks()->get();
+        $tasks1 = Task::all()->diff($tasks);
+        return view('users.edit', [
+            'user' => $user,
+            'tasks' => $tasks,
+            'tasks1' => $tasks1
+        ]);
     }
 
     /**
@@ -69,7 +102,19 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = User::find($id);
+        if ($request->delete_task) {
+            $user->tasks()->detach($request->delete_task);
+        }
+        if ($request->add_task) {
+            $user->tasks()->attach($request->add_task);
+        }
+        if ($request->name) {
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->save();
+        }
+        return redirect()->route('users.edit', ["user" => $user->id]);
     }
 
     /**
@@ -80,6 +125,11 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user = User::find($id);
+        foreach ($user->tasks as $task) {
+            $task->pivot->delete();
+        }
+        $user->delete();
+        return redirect()->route('users.index');
     }
 }
